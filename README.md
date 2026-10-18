@@ -4,29 +4,16 @@
 todo-app/
 ├─ docker-compose.yml        PostgreSQL + backend + frontend
 ├─ backend/                  NestJS API (new)
-└─ frontend/                 your existing Vite + React project
+└─ frontend/                 
    ├─ Dockerfile             (new)
    ├─ .env.example           (new)
    └─ src/
       ├─ App.jsx             (updated: uses the API)
-      ├─ App.css             (updated: error banner styles added at the bottom)
-      ├─ api.js              (new)
-      ├─ index.css           (unchanged)
-      └─ main.jsx            (unchanged)
+      ├─ App.css             
+      ├─ api.js              
+      ├─ index.css           
+      └─ main.jsx            
 ```
-
-## Option A: everything in Docker
-
-1. Put your existing Vite project (package.json, index.html, vite.config.js, ...) in `frontend/`
-   and copy the files from `frontend/src` in this zip over your `src` folder.
-2. From the `todo-app` folder run: `docker compose up --build`
-3. Open http://localhost:5173
-
-## Option B: Docker for the database only, run the rest locally
-
-1. `docker compose up -d db`
-2. Backend: `cd backend && npm install && npm run start:dev`  (runs on http://localhost:3000/api)
-3. Frontend: `cd frontend && npm install && npm run dev`  (runs on http://localhost:5173)
 
 ## API
 
