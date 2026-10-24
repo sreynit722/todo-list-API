@@ -12,7 +12,7 @@ todo-app/
       ├─ App.css             
       ├─ api.js              
       ├─ index.css           
-      └─ main.jsx
+      └─ main.jsx            
 ```
 
 ## API
