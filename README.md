@@ -22,10 +22,14 @@ todo-app/
 2. From the `todo-app` folder run: `docker compose up --build`
 3. Open http://localhost:5173
 
+The Compose JWT secret fallback is for local development only. Set `JWT_SECRET`
+to a random value of at least 32 characters in the root `.env` file before
+deploying, and never expose the development database credentials to the internet.
+
 ## Option B: Docker for the database only, run the rest locally
 
-1. `docker compose up -d db`
-2. Backend: `cd backend && npm install && npm run start:dev`  (runs on http://localhost:3000/api)
+1. `docker compose up -d db` (PostgreSQL is available locally on port 5433)
+2. Set `DB_PORT=5433` in `backend/.env`, then run `cd backend && npm install && npm run start:dev` (runs on http://localhost:3000/api)
 3. Frontend: `cd frontend && npm install && npm run dev`  (runs on http://localhost:5173)
 
 ## API
@@ -39,3 +43,14 @@ todo-app/
 | PUT | /api/todos/reorder | 200 + list (drag and drop order) |
 | GET | /api/profile | 200 + profile |
 | PATCH | /api/profile | 200 + profile, or 400 |
+| POST | /api/auth/signup | 201 + access token and profile; sets an HttpOnly refresh cookie |
+| POST | /api/auth/login | 200 + access token and profile; sets an HttpOnly refresh cookie |
+| POST | /api/auth/refresh | 200 + rotated access token and profile; rotates the refresh cookie |
+| POST | /api/auth/logout | 204 + revokes the refresh token and clears the cookie |
+
+Access tokens expire after 15 minutes and are held only in frontend memory.
+Refresh tokens are random, stored hashed in the database, rotated on refresh,
+and sent as an HttpOnly, SameSite=Lax cookie scoped to `/api/auth`. Production
+must use HTTPS and keep the frontend and API on the same site. TypeORM schema
+synchronization is disabled in production; use database migrations to
+create/update the schema before deploying.

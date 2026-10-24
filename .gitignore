@@ -4,3 +4,4 @@ dist/
 *.log
 tsconfig.tsbuildinfo
 .DS_Store
+backend/tsconfig.build.tsbuildinfo
