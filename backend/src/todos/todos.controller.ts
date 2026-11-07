@@ -10,6 +10,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { AuthUser, CurrentUser } from '../common/current-user.decorator';
 import { TodosService } from './todos.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
@@ -20,29 +21,33 @@ export class TodosController {
   constructor(private readonly todosService: TodosService) {}
 
   @Get()
-  findAll() {
-    return this.todosService.findAll(); // 200
+  findAll(@CurrentUser() user: AuthUser) {
+    return this.todosService.findAll(user.id); // 200 or 401
   }
 
   @Post()
-  create(@Body() dto: CreateTodoDto) {
-    return this.todosService.create(dto); // 201 or 400
+  create(@CurrentUser() user: AuthUser, @Body() dto: CreateTodoDto) {
+    return this.todosService.create(user.id, dto); // 201, 400 or 401
   }
 
   // Declared before ':id' routes so "reorder" is never read as an id
   @Put('reorder')
-  reorder(@Body() dto: ReorderTodosDto) {
-    return this.todosService.reorder(dto.ids); // 200 or 400
+  reorder(@CurrentUser() user: AuthUser, @Body() dto: ReorderTodosDto) {
+    return this.todosService.reorder(user.id, dto.ids); // 200, 400 or 401
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTodoDto) {
-    return this.todosService.update(id, dto); // 200, 400 or 404
+  update(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateTodoDto,
+  ) {
+    return this.todosService.update(id, user.id, dto); // 200, 400, 401 or 404
   }
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.todosService.remove(id); // 204 or 404
+  remove(@CurrentUser() user: AuthUser, @Param('id', ParseIntPipe) id: number) {
+    return this.todosService.remove(id, user.id); // 204, 401 or 404
   }
 }

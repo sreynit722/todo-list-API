@@ -1,39 +1,22 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Profile, toProfile, UsersService } from '../users/users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { Profile } from './entities/profile.entity';
-
-const PROFILE_ID = 1;
 
 @Injectable()
-export class ProfileService implements OnModuleInit {
-  constructor(
-    @InjectRepository(Profile) private readonly repo: Repository<Profile>,
-  ) {}
+export class ProfileService {
+  constructor(private readonly users: UsersService) {}
 
-  // Create the default profile once; does nothing if it already exists.
-  async onModuleInit() {
-    await this.repo
-      .createQueryBuilder()
-      .insert()
-      .values({
-        id: PROFILE_ID,
-        username: 'nex',
-        displayName: 'NEx',
-        email: 'nex@example.com',
-      })
-      .orIgnore()
-      .execute();
+  async get(userId: number): Promise<Profile> {
+    const user = await this.users.findById(userId);
+    if (!user) throw new NotFoundException('Account not found');
+    return toProfile(user);
   }
 
-  get(): Promise<Profile> {
-    return this.repo.findOneByOrFail({ id: PROFILE_ID });
-  }
-
-  async update(dto: UpdateProfileDto): Promise<Profile> {
-    const profile = await this.get();
-    this.repo.merge(profile, dto);
-    return this.repo.save(profile);
+  async update(userId: number, dto: UpdateProfileDto): Promise<Profile> {
+    const changes: Partial<Profile> = {};
+    if (dto.username !== undefined) changes.username = dto.username;
+    if (dto.displayName !== undefined) changes.displayName = dto.displayName;
+    if (dto.email !== undefined) changes.email = dto.email.toLowerCase();
+    return toProfile(await this.users.updateProfile(userId, changes));
   }
 }

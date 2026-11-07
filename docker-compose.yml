@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: todo
       POSTGRES_DB: todo
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -30,12 +30,15 @@ services:
       DB_PASS: todo
       DB_NAME: todo
       CORS_ORIGIN: http://localhost:5173
+      JWT_SECRET: ${JWT_SECRET:-local-development-only-secret-do-not-use-in-production}
+      JWT_EXPIRES_IN: 15m
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - ./backend:/app
       - /app/node_modules
+      
 
   frontend:
     build: ./frontend
